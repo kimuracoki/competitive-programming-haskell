@@ -1,0 +1,6 @@
+{
+  "code-runner.executorMap": {
+    "haskell": "/home/codespace/.ghcup/bin/runghc"
+  },
+  "code-runner.runInTerminal": true
+}
