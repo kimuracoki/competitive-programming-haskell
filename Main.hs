@@ -1,2 +1,10 @@
+
 main :: IO ()
-main = putStrLn "Hello, Haskell"
+main = do
+    _ <- getLine
+    as <- map read . words <$> getLine :: IO [Int]
+    print $ mgcd as
+
+mgcd :: [Int] -> Int
+mgcd [] = 0
+mgcd (x:xs) = gcd x $ mgcd xs
