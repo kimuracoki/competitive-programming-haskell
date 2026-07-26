@@ -101,17 +101,23 @@ contest id:
       abc[0-9]*|arc[0-9]*|agc[0-9]*) group=$(printf '%s' "{{id}}" | sed 's/[0-9]*$//') ;;
       *)                             group="{{id}}" ;;
     esac
+    # acc のグローバル設定をこのリポジトリから独立させる。
+    # acc は oj を見つけると、その絶対パスを自分の config.json に保存してしまうので、
+    # --no-tests で oj を使わせない。acc には問題一覧の取得だけさせ、
+    # テンプレート配布（--no-template）とサンプル取得は後処理でこちらがやる。
+    template=$PWD/template/Main.hs
     mkdir -p "problems/$group"
-    cd "problems/$group" && acc new {{id}}
-    # acc はディレクトリ名を問題ラベルだけ（a, b, …）にし、Main.hs に見出しも入れない。
-    # just new と同じ「ラベル-公式タイトル」に揃え、URL を 2 行目に入れる（just s が読む）。
-    cd {{id}} && uv run python - <<'PY'
-    import json, pathlib, re
+    cd "problems/$group" && acc new {{id}} --no-template --no-tests
+    # acc はディレクトリ名を問題ラベルだけ（a, b, …）にする。
+    # just new と同じ「ラベル-公式タイトル」に揃え、Main.hs を置いて URL を 2 行目に入れる。
+    cd {{id}} && TEMPLATE=$template uv run python - <<'PY'
+    import json, os, pathlib, re, subprocess
 
     def slugify(s):
         s = s.lower().replace('+', ' plus ')
         return re.sub(r'-+$', '', re.sub(r'^-+', '', re.sub(r'[^a-z0-9]+', '-', s)))
 
+    template = pathlib.Path(os.environ['TEMPLATE']).read_text()
     meta = pathlib.Path('contest.acc.json')
     data = json.loads(meta.read_text())
     for task in data['tasks']:
@@ -121,17 +127,16 @@ contest id:
         if old != new and old.is_dir():
             old.rename(new)
             task['directory']['path'] = str(new)
+        new.mkdir(exist_ok=True)
         main = new / 'Main.hs'
         if not main.is_file():
-            continue
-        # acc はテンプレートを symlink のまま複製する。実体にしないと、
-        # 全問題の Main.hs が template/Main.hs 1 枚を共有してしまう。
-        body = main.read_text()
-        if main.is_symlink():
-            main.unlink()
-        if not body.startswith('--'):
-            body = f"-- {heading}\n-- {task['url']}\n\n" + body
-        main.write_text(body)
+            main.write_text(f"-- {heading}\n-- {task['url']}\n\n" + template)
+        # uv run 配下なので .venv/bin が PATH にある。インタラクティブ問題など
+        # サンプルが無い問題では oj が失敗するが、それは無視して続ける。
+        if not (new / 'test').is_dir():
+            subprocess.run(['oj', 'd', task['url']], cwd=new,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     meta.write_text(json.dumps(data, indent=2) + '\n')
-    print(f"{len(data['tasks'])} 問を整えました")
+    got = sum(1 for t in data['tasks'] if (pathlib.Path(t['directory']['path']) / 'test').is_dir())
+    print(f"{len(data['tasks'])} 問を用意（うち {got} 問はサンプル取得済み）")
     PY

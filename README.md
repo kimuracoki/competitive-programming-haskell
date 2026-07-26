@@ -65,17 +65,12 @@ AtCoder が reCAPTCHA を導入したため、`acc login` / `oj login` のパス
 
 ### acc のグローバル設定
 
-`acc` の設定（テンプレートと `oj` の場所）は acc のグローバル設定に入っていて、
-リポジトリ内にはない。別マシンで使うときは:
+`acc` のグローバル設定はこのリポジトリを参照しない（`oj` は justfile が PATH を通し、
+テンプレートは justfile が配る）。別マシンでは出力先の名前だけ合わせればよい:
 
 ```sh
-CFG=$(acc config-dir); mkdir -p "$CFG/haskell"
-ln -sf "$PWD/template/Main.hs" "$CFG/haskell/Main.hs"
-printf '{"task":{"program":["Main.hs"],"submit":"Main.hs"}}' > "$CFG/haskell/template.json"
-acc config oj-path "$PWD/.venv/bin/oj"
-acc config default-test-dirname-format test
+acc config default-test-dirname-format test   # oj t の既定に合わせる
 acc config default-task-choice all
-acc config default-template haskell
 ```
 
 `ghcup set` を忘れると、GHC のバージョンとファイル名が対応している
