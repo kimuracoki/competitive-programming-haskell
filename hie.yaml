@@ -1,0 +1,18 @@
+# HLS への読み込み指示。
+#
+# problems/ 以下の Main.hs は cabal のコンポーネントに属さない単独ファイルなので、
+# cabal cradle だと "It may not be listed in your .cabal file!" になる。
+# direct cradle で素の GHC として読ませ、パッケージは cabal build が生成する
+# .ghc.environment.* から解決させる。
+cradle:
+  multi:
+    - path: "./src"
+      config:
+        cradle:
+          cabal:
+            component: "lib:atcoder-env"
+    - path: "./"
+      config:
+        cradle:
+          direct:
+            arguments: []
