@@ -1,19 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import Data.Maybe (fromJust)
 import qualified Data.ByteString.Char8 as BS
 
 main :: IO ()
 main = undefined
-
-getInt :: IO Int
-getInt = readInt <$> BS.getLine
-
-getInts :: IO [Int]
-getInts = ints <$> BS.getLine
-
-readInt :: BS.ByteString -> Int
-readInt = fst . fromJust . BS.readInt
-
-ints :: BS.ByteString -> [Int]
-ints = map readInt . BS.words

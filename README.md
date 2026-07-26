@@ -6,13 +6,23 @@ AtCoder を Haskell で解いた記録。解答は [`problems/`](problems/README
 
 ```sh
 just new https://atcoder.jp/contests/abc268/tasks/abc268_b
-# solve を実装する
+# main を実装する
 just t     # サンプル全件テスト
 just s     # 提出
 ```
 
 `just new` は URL だけで、置き場所・ディレクトリ名（公式タイトルのケバブケース）・
 `Main.hs` 冒頭の見出し・サンプルの取得まで済ませる。
+
+入力は常に `ByteString` で受ける。`String` + `read` は N が 10^5 を超えると TLE するが、
+その原因はアルゴリズム側の問題に見えてデバッグしにくいので、問題ごとに切り替えない。
+
+[`template/Main.hs`](template/Main.hs) に入っているのは `import` 2 行と `main` だけ。
+`import` は全宣言より前に置く必要があり、カーソル位置に挿入するスニペットとは相性が悪いので常駐させている。
+実際の読み方（`getInts` など）は Neovim のスニペットで、使う問題にだけ入れる。
+各スニペットは `readInt` を `where` に閉じ込めてあるので、複数展開しても二重定義にならない。
+
+AtCoder は 1 ファイル提出なので、共通モジュールを `import` して共有することはできない。
 
 `just t` / `just s` / `just doc` に引数は要らない。**最後に編集した `Main.hs` のディレクトリ**が
 対象になる。引数なしの `just` でレシピ一覧と現在の対象が出る。
@@ -21,9 +31,7 @@ just s     # 提出
 コンテストに出るときは `just contest abc268` で全問ぶんをまとめて用意できる
 （[atcoder-cli](https://github.com/Tatamo/atcoder-cli) 経由）。
 
-`just doc` は doctest。テンプレートには doctest を入れていないので、自分で切り出した関数を
-試したくなったときに `-- >>>` を書く（015 がその例）。ByteString リテラルを使うなら
-`-- $setup` に `-- >>> :set -XOverloadedStrings` を足す。
+`just doc` は doctest。自分で切り出した関数を試したくなったときに `-- >>>` を書く（015 がその例）。
 
 進捗は [AtCoder Problems](https://kenkoooo.com/atcoder) が提出履歴から出してくれるので、
 リポジトリ側では管理しない。
