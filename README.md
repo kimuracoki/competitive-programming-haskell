@@ -21,9 +21,9 @@ just s     # 提出
 コンテストに出るときは `just contest abc268` で全問ぶんをまとめて用意できる
 （[atcoder-cli](https://github.com/Tatamo/atcoder-cli) 経由）。
 
-`just doc` は doctest。テンプレートには doctest を入れていないので、`solve` の部品を試したく
-なったときに `-- >>>` を書く。ByteString リテラルを使うなら `-- $setup` に
-`-- >>> :set -XOverloadedStrings` を足す。
+`just doc` は doctest。テンプレートには doctest を入れていないので、自分で切り出した関数を
+試したくなったときに `-- >>>` を書く（015 がその例）。ByteString リテラルを使うなら
+`-- $setup` に `-- >>> :set -XOverloadedStrings` を足す。
 
 進捗は [AtCoder Problems](https://kenkoooo.com/atcoder) が提出履歴から出してくれるので、
 リポジトリ側では管理しない。
