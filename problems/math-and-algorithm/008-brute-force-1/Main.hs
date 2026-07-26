@@ -1,6 +1,5 @@
 -- 008 - Brute Force 1
 -- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_h
--- Status: AC
 
 main :: IO ()
 main = do

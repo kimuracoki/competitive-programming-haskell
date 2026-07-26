@@ -1,0 +1,11 @@
+[project]
+name = "cp-tools"
+version = "0"
+description = "online-judge-tools をこのリポジトリに固定して使うためだけの定義"
+# online-judge-tools が distutils を使っており、3.12 で削除されたので上限を切る。
+# uv がこの範囲の Python 本体を自動で用意する。
+requires-python = ">=3.9,<3.12"
+dependencies = ["online-judge-tools"]
+
+[tool.uv]
+package = false

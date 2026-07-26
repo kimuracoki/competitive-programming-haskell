@@ -1,6 +1,5 @@
 -- 015 - Calculate GCD
 -- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_o
--- Status: AC
 --
 -- doctest を導入してみた。
 -- これで repl しながら、テスト駆動しながら、というリズムで書くことができるはず。

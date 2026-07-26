@@ -1,6 +1,5 @@
 -- 009 - Brute Force 2
 -- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_i
--- Status: Partial (500 pts)
 --
 -- 全探索で解いたため、部分点 500。
 --

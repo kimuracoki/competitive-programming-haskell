@@ -1,6 +1,5 @@
 -- 007 - Number of Multiples 1
 -- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_g
--- Status: AC
 
 main :: IO ()
 main = do

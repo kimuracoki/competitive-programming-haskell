@@ -1,0 +1,10 @@
+packages: .
+
+-- ジャッジ (2025/10) と同じ GHC に固定する。
+-- グローバルの既定 (ghcup set) は変えないので、このディレクトリの外には影響しない。
+with-compiler: ghc-9.8.4
+
+-- cabal build のたびに .ghc.environment.* を書き出す。
+-- これにより素の runghc / doctest からもジャッジと同じパッケージ集合が見え、
+-- ~/.ghc/.../environments/default（bytestring や containers を隠していた犯人）を上書きできる。
+write-ghc-environment-files: always

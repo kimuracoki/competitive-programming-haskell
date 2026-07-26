@@ -1,6 +1,5 @@
 -- 013 - Divisor Enumeration
 -- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_m
--- Status: AC
 --
 -- これで通した。
 --

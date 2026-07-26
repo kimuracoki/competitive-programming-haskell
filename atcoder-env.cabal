@@ -1,0 +1,32 @@
+cabal-version:      2.4
+name:               atcoder-env
+version:            0
+synopsis:           AtCoder のジャッジ環境をローカルに再現するためだけのパッケージ
+build-type:         Simple
+
+-- 解答は 1 問 1 ファイルで problems/ に置き、このパッケージ経由で走らせる:
+--
+--     cabal exec runghc  -- problems/abc/abc268/a-five-integers/Main.hs
+--     cabal exec doctest -- problems/abc/abc268/a-five-integers/Main.hs
+--
+-- ここに書いた依存がジャッジで使えるパッケージ集合にあたる。
+-- バージョンは 2025/10 の言語アップデートに合わせてある。
+-- 足りないものが出たら
+-- https://img.atcoder.jp/file/language-update/2025-10/language-list.html
+-- を見て追加する。
+
+library
+    hs-source-dirs:   src
+    exposed-modules:  AtCoderEnv
+    default-language: GHC2021
+    build-depends:
+        base
+      , array
+      , bytestring    == 0.12.2.0
+      , containers    == 0.8
+      , vector        == 0.13.2.0
+      , ac-library-hs == 1.5.3.0
+      , mtl
+      , transformers
+      , primitive
+      , random

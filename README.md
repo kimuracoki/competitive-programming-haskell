@@ -1,20 +1,82 @@
 # competitive-programming-haskell
 
-AtCoder を Haskell で解いた記録。解答は [`problems/`](problems/README.md) に出題元ごと・1 問 1 ディレクトリで置いてある。
-新しい問題を解き始めるときの手順も [`problems/README.md`](problems/README.md) にある。
+AtCoder を Haskell で解いた記録。解答は [`problems/`](problems/README.md) に 1 問 1 ディレクトリ。
+
+## 問題を解く
 
 ```sh
-scripts/new.sh <path> <url>   # 問題ディレクトリ一式を作る
-scripts/test.sh <path>        # サンプルと doctest を回す
-scripts/index.sh              # 出題元ごとの一覧表を再生成する
+just new https://atcoder.jp/contests/abc268/tasks/abc268_b
+# solve を実装する
+just t     # サンプル全件テスト
+just s     # 提出
 ```
 
-cabal/stack プロジェクトにはしていない。1 問 1 ファイルで完結させ、`runghc Main.hs` で動かすため。
-そのぶん使えるのは GHC 同梱のパッケージ（`containers`, `array`, `bytestring`, `mtl`）だけで、
-`vector` や `ac-library-hs` が要る問題に当たったらプロジェクト化から考える。
+`just new` は URL だけで、置き場所・ディレクトリ名（公式タイトルのケバブケース）・
+`Main.hs` 冒頭の見出し・サンプルの取得まで済ませる。
 
-`scripts/test.sh` が使う [doctest](https://hackage.haskell.org/package/doctest) だけ別途必要:
+`just t` / `just s` / `just doc` に引数は要らない。**最後に編集した `Main.hs` のディレクトリ**が
+対象になる。引数なしの `just` でレシピ一覧と現在の対象が出る。
+明示するなら `just dir=problems/… t`。
+
+コンテストに出るときは `just contest abc268` で全問ぶんをまとめて用意できる
+（[atcoder-cli](https://github.com/Tatamo/atcoder-cli) 経由）。
+
+`just doc` は doctest。テンプレートには doctest を入れていないので、`solve` の部品を試したく
+なったときに `-- >>>` を書く。ByteString リテラルを使うなら `-- $setup` に
+`-- >>> :set -XOverloadedStrings` を足す。
+
+進捗は [AtCoder Problems](https://kenkoooo.com/atcoder) が提出履歴から出してくれるので、
+リポジトリ側では管理しない。
+
+## 環境
+
+ジャッジ（[2025/10](https://img.atcoder.jp/file/language-update/2025-10/language-list.html)）は
+**GHC 9.8.4** + `cabal v2-build`。手元もそれに合わせてある。
+
+- `cabal.project` / `atcoder-env.cabal` — ジャッジと同じ GHC・パッケージ集合を宣言する。
+  中身のない `atcoder-env` パッケージは、`cabal build` に
+  `.ghc.environment.*` を書かせるためだけに存在する。これがあると素の `runghc` /
+  `doctest` からも `bytestring`・`containers`・`vector`・`ac-library-hs` が見える。
+- `pyproject.toml` / `uv.lock` — `online-judge-tools` (`oj`) を固定する。Python 本体ごと
+  `uv` が用意するので、グローバルには何も入らない。`oj` は言語非依存で、C++ や Rust の人も使う。
+
+### セットアップ
 
 ```sh
-cabal install doctest
+ghcup install ghc 9.8.4 && ghcup set ghc 9.8.4
+cabal build                                        # 依存の取得と .ghc.environment.* の生成
+cabal install doctest --with-compiler=ghc-9.8.4
+brew install uv just                               # oj は uv run 経由なので個別導入は不要
+npm install -g atcoder-cli                         # just contest を使う場合のみ
+just login                                         # 提出・contest 生成に必要
 ```
+
+### ログイン
+
+AtCoder が reCAPTCHA を導入したため、`acc login` / `oj login` のパスワード認証は通らない
+（正しいパスワードでも `login failed` になる）。ブラウザのセッションクッキーを渡す:
+
+1. ブラウザで AtCoder にログインする
+2. DevTools → Application → Cookies → `https://atcoder.jp` → `REVEL_SESSION` の値をコピー
+3. `just login` を実行して貼り付ける（入力は表示されず、シェル履歴にも残らない）
+
+`just check` で `oj` と `acc` 両方のログイン状態を確認できる。
+セッションが切れたら `just login` をやり直す。
+
+### acc のグローバル設定
+
+`acc` の設定（テンプレートと `oj` の場所）は acc のグローバル設定に入っていて、
+リポジトリ内にはない。別マシンで使うときは:
+
+```sh
+CFG=$(acc config-dir); mkdir -p "$CFG/haskell"
+ln -sf "$PWD/template/Main.hs" "$CFG/haskell/Main.hs"
+printf '{"task":{"program":["Main.hs"],"submit":"Main.hs"}}' > "$CFG/haskell/template.json"
+acc config oj-path "$PWD/.venv/bin/oj"
+acc config default-test-dirname-format test
+acc config default-task-choice all
+acc config default-template haskell
+```
+
+`ghcup set` を忘れると、GHC のバージョンとファイル名が対応している
+`.ghc.environment.*` が読まれず、`bytestring` などが hidden package になる。
