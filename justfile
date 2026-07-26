@@ -103,3 +103,35 @@ contest id:
     esac
     mkdir -p "problems/$group"
     cd "problems/$group" && acc new {{id}}
+    # acc はディレクトリ名を問題ラベルだけ（a, b, …）にし、Main.hs に見出しも入れない。
+    # just new と同じ「ラベル-公式タイトル」に揃え、URL を 2 行目に入れる（just s が読む）。
+    cd {{id}} && uv run python - <<'PY'
+    import json, pathlib, re
+
+    def slugify(s):
+        s = s.lower().replace('+', ' plus ')
+        return re.sub(r'-+$', '', re.sub(r'^-+', '', re.sub(r'[^a-z0-9]+', '-', s)))
+
+    meta = pathlib.Path('contest.acc.json')
+    data = json.loads(meta.read_text())
+    for task in data['tasks']:
+        old = pathlib.Path(task['directory']['path'])
+        heading = f"{task['label']} - {task['title']}"
+        new = pathlib.Path(slugify(heading))
+        if old != new and old.is_dir():
+            old.rename(new)
+            task['directory']['path'] = str(new)
+        main = new / 'Main.hs'
+        if not main.is_file():
+            continue
+        # acc はテンプレートを symlink のまま複製する。実体にしないと、
+        # 全問題の Main.hs が template/Main.hs 1 枚を共有してしまう。
+        body = main.read_text()
+        if main.is_symlink():
+            main.unlink()
+        if not body.startswith('--'):
+            body = f"-- {heading}\n-- {task['url']}\n\n" + body
+        main.write_text(body)
+    meta.write_text(json.dumps(data, indent=2) + '\n')
+    print(f"{len(data['tasks'])} 問を整えました")
+    PY
