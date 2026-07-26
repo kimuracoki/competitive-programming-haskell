@@ -1,25 +1,74 @@
 # Problems
 
-Solutions originally written and tracked in a [Zenn scrap](https://zenn.dev/kimuracoki/scraps/02dbf610234f98), moved here so they aren't lost when the sandbox is discarded.
-Each problem is its own directory with a `Main.hs`, runnable with `runghc Main.hs`. Where a problem had a failed attempt (e.g. TLE) before the accepted solution, each attempt gets its own numbered subdirectory (`1-tle/Main.hs`, `2-ac/Main.hs`) so the order is preserved.
+出題元ごとに番号体系が違うので、まず出題元で分ける。
 
-`Main.hs` is not a blanket guarantee of "accepted" — see the Status column. 009 stops at a partial-score brute force; the DP rewrite mentioned in its notes was never posted in the source scrap. "AC" below is inferred from the absence of any failure note in the scrap, not confirmed against a judge.
+| 出題元 | 一覧 |
+|--------|------|
+| 「アルゴリズムと数学」演習問題集 (001–104) | [math-and-algorithm/](math-and-algorithm/README.md) |
+| AtCoder Beginner Contest | [abc/](abc/README.md) |
 
-| # | Problem | Directory | Status |
-|---|---------|-----------|--------|
-| 001 | Print 5+N | [001-print-5-plus-n](001-print-5-plus-n/Main.hs) | AC |
-| 002 | Sum of 3 Integers | [002-sum-of-3-integers](002-sum-of-3-integers/Main.hs) | AC |
-| 003 | Sum of N Integers | [003-sum-of-n-integers](003-sum-of-n-integers/Main.hs) | AC |
-| 004 | Product of 3 Integers | [004-product-of-3-integers](004-product-of-3-integers/Main.hs) | AC |
-| 005 | Modulo 100 | [005-modulo-100](005-modulo-100/Main.hs) | AC |
-| 006 | Print 2N+3 | [006-print-2n-plus-3](006-print-2n-plus-3/Main.hs) | AC |
-| 007 | Number of Multiples 1 | [007-number-of-multiples-1](007-number-of-multiples-1/Main.hs) | AC |
-| 008 | Brute Force 1 | [008-brute-force-1](008-brute-force-1/Main.hs) | AC |
-| 009 | Brute Force 2 | [009-brute-force-2](009-brute-force-2/Main.hs) | **Partial (500 pts)** — brute force only, DP version never written |
-| 010 | Factorial | [010-factorial](010-factorial/Main.hs) | AC |
-| 011 | Print Prime Numbers | [011-print-prime-numbers](011-print-prime-numbers/Main.hs) | AC |
-| 012 | Primality Test | [012-primality-test](012-primality-test/Main.hs) | AC |
-| 013 | Divisor Enumeration | [2-ac](013-divisor-enumeration/2-ac/Main.hs) ([1-tle](013-divisor-enumeration/1-tle/Main.hs)) | AC |
-| 014 | Factorization | [2-ac](014-factorization/2-ac/Main.hs) ([1-tle](014-factorization/1-tle/Main.hs)) | AC |
-| 015 | Calculate GCD | [015-calculate-gcd](015-calculate-gcd/Main.hs) | AC |
-| 016 | Common Divisor of N Integers | [016-common-divisor-of-n-integers](016-common-divisor-of-n-integers/Main.hs) | AC |
+## 1 問あたりのファイル
+
+```
+<problem>/
+├── README.md     問題の URL・制約・振り返り
+├── Main.hs       提出するコードそのもの
+├── sample1.in    サンプル入力
+└── sample1.out   サンプル出力
+```
+
+どこに何を書くかは固定する。混ぜると、後から「制約なんだっけ」を探す場所がブレる。
+
+| 情報 | 置き場所 |
+|------|----------|
+| 問題 URL、制約、詰まった点・TLE の原因 | `README.md` |
+| 提出するコード、その意図を説明するコメント、doctest (`>>>`) | `Main.hs` |
+| サンプルの入出力 | `sampleN.in` / `sampleN.out` |
+| 進捗一覧 | 出題元の `README.md`（`scripts/index.sh` の生成物。手で書かない） |
+
+`Main.hs` には URL も制約も書かない。提出時にそのまま貼れる状態を保つため。
+
+TLE などで解き直した場合は、試行ごとに `1-tle/Main.hs` `2-ac/Main.hs` と枝を切る（013, 014 がその形）。
+サンプルは問題ディレクトリ側に 1 組だけ置けばよく、`scripts/test.sh` は親も見に行く。
+
+## 新しい問題を解くとき
+
+**1. ディレクトリを作る**
+
+```sh
+scripts/new.sh abc/abc268/b-counting-nines https://atcoder.jp/contests/abc268/tasks/abc268_b
+```
+
+タイトルは URL から取ってくるので、パスの末尾は公式タイトルのケバブケースに合わせる。
+`README.md` / `Main.hs` / 空の `sample1.in` / `sample1.out` ができる。
+
+**2. 問題文から 2 か所へコピーする**
+
+- **制約** → `README.md` の「制約」。ここを埋めてから書き始める。
+  `N ≤ 10^18` なら `Int` の上限（約 9.2 × 10^18）に収まるか、
+  `N ≤ 2×10^5` なら `getLine` + `read` で間に合うか `ByteString` が要るか、
+  の判断がここで決まる。後から気づくと TLE / オーバーフローで踏む。
+- **サンプル** → `sample1.in` / `sample1.out`。複数あれば `sample2.*` と増やす。
+
+**3. `Main.hs` の `solve` を書く**
+
+入出力から独立した部分を `solve` に切り出しておくと doctest で回せる。
+テンプレにはその形が入っている。型は問題に合わせて変えてよい。
+
+**4. テストする**
+
+```sh
+scripts/test.sh abc/abc268/b-counting-nines
+```
+
+`sampleN.in` を食わせて `sampleN.out` と diff し、`Main.hs` に `>>>` があれば doctest も実行する。
+
+**5. 提出したら Status とメモを書く**
+
+`README.md` の `- Status:` を `AC` などに変え、詰まった点を「メモ」に残してから:
+
+```sh
+scripts/index.sh
+```
+
+出題元の一覧表が更新される。

@@ -1,0 +1,23 @@
+-- 015 - Calculate GCD
+-- https://atcoder.jp/contests/math-and-algorithm/tasks/math_and_algorithm_o
+-- Status: AC
+--
+-- doctest を導入してみた。
+-- これで repl しながら、テスト駆動しながら、というリズムで書くことができるはず。
+
+main :: IO ()
+main = do
+  [a, b] <- map read . words <$> getLine :: IO [Int] 
+  putStrLn $ show $ gcd' a b 
+
+-- |
+-- >>> gcd' 33 88 
+-- 11
+-- >>> gcd' 123 777 
+-- 3
+--
+-- prop> gcd' (abs a) (abs b) == gcd a b
+-- Add QuickCheck to your cabal dependencies to run this test.
+gcd' :: Int -> Int -> Int
+gcd' a 0 = a
+gcd' a b = gcd' b $ a `mod` b
