@@ -6,32 +6,69 @@ AtCoder を Haskell で解いた記録。解答は [`problems/`](problems/README
 
 ```sh
 just new https://atcoder.jp/contests/abc268/tasks/abc268_b
-# main を実装する
-just t     # サンプル全件テスト
+# 解く
+just t     # サンプル全件テスト（-O2 + 2 秒制限）
 just s     # 提出
 ```
 
 `just new` は URL だけで、置き場所・ディレクトリ名（公式タイトルのケバブケース）・
 `Main.hs` 冒頭の見出し・サンプルの取得まで済ませる。
 
+### 書き方
+
+`main` は **読む → 呼ぶ → 書く** に留め、考える部分は引数を取る純粋関数に切り出す。
+
+```haskell
+main :: IO ()
+main = do
+  [n, k] <- getInts
+  as     <- getInts
+  print $ solve n k as
+
+-- |
+-- >>> solve 3 2 [1,2,3]
+-- 5
+solve :: Int -> Int -> [Int] -> Int
+solve n k as = ...
+```
+
+`BS.interact solve` にするとパースが `solve` の中に入り、doctest の引数が生の入力文字列
+（`"3 2\n1 2 3\n"`）になる。引数で渡せば `>>> solve 3 2 [1,2,3]` と読める形で書けるし、
+`solve` の型を先に書けば HLS が穴を埋めてくれる。ロジックが 1 行で済む A・B 問題なら
+切り出さなくてよい。
+
+doctest が拾うのは Haddock コメントの中だけなので、`-- >>>` の上に `-- |` が要る
+（無いと `Examples: 0` で黙って通ってしまう）。走らせるのは `just doc`。
+
 入力は常に `ByteString` で受ける。`String` + `read` は N が 10^5 を超えると TLE するが、
 その原因はアルゴリズム側の問題に見えてデバッグしにくいので、問題ごとに切り替えない。
 
-[`template/Main.hs`](template/Main.hs) に入っているのは `import` 2 行と `main` だけ。
-`import` は全宣言より前に置く必要があり、カーソル位置に挿入するスニペットとは相性が悪いので常駐させている。
-実際の読み方（`getInts` など）は Neovim のスニペットで、使う問題にだけ入れる。
-各スニペットは `readInt` を `where` に閉じ込めてあるので、複数展開しても二重定義にならない。
+[`template/Main.hs`](template/Main.hs) は `main` の 2 行だけ。読み書きのヘルパー
+（`getInts` など）も `import` も、Neovim のスニペット
+（`~/.config/nvim/snippets/lua/haskell.lua`）が**使った問題にだけ**入れる。
+`getInts` を補完するとカーソル位置に名前が入り、同時に末尾へ定義が、先頭へ `import` が生える。
+各定義は `readInt` を `where` に閉じ込めてあるので、複数展開しても二重定義にならない。
+
+詰まったら `dbg`（式の途中）/ `dbgM`（`do` の中）で `Debug.Trace` に出す。
+`oj` も AtCoder も stderr を見ないので、覗いたまま `just t` も `just s` も通る。
 
 AtCoder は 1 ファイル提出なので、共通モジュールを `import` して共有することはできない。
+
+### 走らせ方
 
 `just t` / `just s` / `just doc` に引数は要らない。**最後に編集した `Main.hs` のディレクトリ**が
 対象になる。引数なしの `just` でレシピ一覧と現在の対象が出る。
 明示するなら `just dir=problems/… t`。
 
+`just t` はジャッジと同じ `-O2` でコンパイルしてから走らせ、AtCoder と同じ 2 秒で打ち切る。
+`runghc` はインタプリタなので 10^8 回ループに 14 秒（コンパイル版は 0.15 秒）かかり、
+TLE かどうかが手元で分からなかった。コンパイル自体は 0.1〜0.4 秒で `runghc` の起動より短い。
+中間生成物は `.build/` に出るので `problems/` は汚れない。
+
+Neovim からは `<leader>rt`（テスト）/ `<leader>rs`（提出）/ `<leader>rd`（doctest）。
+
 コンテストに出るときは `just contest abc268` で全問ぶんをまとめて用意できる
 （[atcoder-cli](https://github.com/Tatamo/atcoder-cli) 経由）。
-
-`just doc` は doctest。自分で切り出した関数を試したくなったときに `-- >>>` を書く（015 がその例）。
 
 進捗は [AtCoder Problems](https://kenkoooo.com/atcoder) が提出履歴から出してくれるので、
 リポジトリ側では管理しない。

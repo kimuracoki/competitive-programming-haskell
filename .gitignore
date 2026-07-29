@@ -1,3 +1,4 @@
 dist-newstyle/
+.build/
 .venv/
 .ghc.environment.*

@@ -14,4 +14,5 @@ TLE で解き直した場合は `1-tle/` `2-ac/` と試行ごとに分ける（0
 
 AC/WA の一覧は [AtCoder Problems](https://kenkoooo.com/atcoder) が提出履歴から出してくれるので、ここには持たない。
 
-共通の入出力ヘルパーは [`../template/Main.hs`](../template/Main.hs)。
+`Main.hs` の書き方（`main` は読む → 呼ぶ → 書く、ロジックは純粋関数）と、
+入出力ヘルパーの入れ方は [`../README.md`](../README.md#書き方)。

@@ -33,14 +33,13 @@ new url:
     echo "created: $target"
 
 # ブラウザの REVEL_SESSION クッキーを oj と acc に書き込む
-#
-# AtCoder が reCAPTCHA を入れたため acc login / oj login のパスワード認証は通らない。
-# ブラウザで AtCoder にログインした状態で
-#   DevTools → Application → Cookies → https://atcoder.jp → REVEL_SESSION
-# の値をコピーしてから実行する。入力は画面に出ないし、シェル履歴にも残らない。
 login:
     #!/usr/bin/env bash
     set -euo pipefail
+    # AtCoder が reCAPTCHA を入れたため acc login / oj login のパスワード認証は通らない。
+    # ブラウザで AtCoder にログインした状態で
+    #   DevTools → Application → Cookies → https://atcoder.jp → REVEL_SESSION
+    # の値をコピーしてから実行する。入力は画面に出ないし、シェル履歴にも残らない。
     read -rsp 'REVEL_SESSION: ' value; echo
     [ -n "$value" ] || { echo "空でした" >&2; exit 1; }
     # oj (LWPCookieJar)
@@ -77,9 +76,21 @@ check:
     -uv run oj login --check https://atcoder.jp
     -acc session
 
-# サンプル全件テスト
+# サンプル全件テスト（ジャッジと同じ -O2、AtCoder と同じ 2 秒制限）
 t:
-    cd {{dir}} && {{oj}} t -c "runghc Main.hs"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # runghc はインタプリタなので 10^8 回ループに 14 秒（コンパイル版は 0.15 秒）かかり、
+    # TLE かどうかが手元で分からなかった。コンパイル自体は 0.1〜0.4 秒で runghc の起動より短い。
+    # 中間生成物（.hi/.o と実行ファイル）は .build/ に逃がし、problems/ を汚さない。
+    out="$PWD/.build/{{dir}}"
+    mkdir -p "$out"
+    # macOS では GHC が渡す -undefined dynamic_lookup にリンカが毎回警告を出す。
+    # 中身のない警告なので黙らせる（GNU ld には無いオプションなので Darwin 限定）。
+    quiet=()
+    [ "$(uname)" = Darwin ] && quiet=(-optl-Wl,-w)
+    ghc -v0 -O2 "${quiet[@]}" -outputdir "$out" -o "$out/main" {{dir}}/Main.hs
+    cd {{dir}} && {{oj}} t --tle 2 -c "$out/main"
 
 # 提出（提出先は Main.hs 2 行目の URL から取る）
 s:
