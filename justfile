@@ -3,7 +3,7 @@
 dir := `ls -t problems/*/*/Main.hs problems/*/*/*/Main.hs 2>/dev/null | head -1 | xargs dirname`
 
 # oj は起動のたびに PyPI へ更新確認に行く（キャッシュは 8 時間）。
-# 回線しだいでそこで固まるので、確認だけ潰して本体を呼ぶ。
+# タイムアウトが無いので回線しだいでそこで固まる。確認だけ潰して本体を呼ぶ。
 oj := "uv run python -c 'from onlinejudge_command import main, update_checking; update_checking.run = lambda: True; main.main()'"
 
 # レシピ一覧と、いまの対象ディレクトリ
@@ -98,9 +98,15 @@ t:
 s:
     #!/usr/bin/env bash
     set -euo pipefail
+    # AtCoder が提出フォームに Cloudflare Turnstile を入れたため、oj s の POST は
+    # cf-turnstile-response が無いとサーバに弾かれる（× Error. とだけ返る）。
+    # トークンは実ブラウザでしか取れないので、コードをクリップボードに載せて
+    # 提出ページを開くところまでをこちらでやる。貼って Submit を押すだけにする。
     url=$(sed -n '2s|^-- \(https\{0,1\}://.*\)|\1|p' {{dir}}/Main.hs)
     [ -n "$url" ] || { echo "{{dir}}/Main.hs の 2 行目に問題 URL がありません" >&2; exit 1; }
-    cd {{dir}} && {{oj}} s "$url" Main.hs
+    pbcopy < {{dir}}/Main.hs
+    open "$(printf '%s' "$url" | sed 's|/tasks/\(.*\)$|/submit?taskScreenName=\1|')"
+    echo "{{dir}}/Main.hs をコピーした。貼って Submit（言語は前回の選択が残る）。"
 
 # doctest（solve の部品を試す用）
 doc:
