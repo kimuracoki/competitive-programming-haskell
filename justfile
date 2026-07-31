@@ -2,7 +2,9 @@
 # 明示するなら just dir=problems/abc/abc268/b-prefix t
 dir := `ls -t problems/*/*/Main.hs problems/*/*/*/Main.hs 2>/dev/null | head -1 | xargs dirname`
 
-oj := "uv run oj"
+# oj は起動のたびに PyPI へ更新確認に行く（キャッシュは 8 時間）。
+# 回線しだいでそこで固まるので、確認だけ潰して本体を呼ぶ。
+oj := "uv run python -c 'from onlinejudge_command import main, update_checking; update_checking.run = lambda: True; main.main()'"
 
 # レシピ一覧と、いまの対象ディレクトリ
 default:
